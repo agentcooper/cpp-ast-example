@@ -5,13 +5,13 @@
 #include <string>
 #include <vector>
 
-struct IdentityNode;
+struct IdentifierNode;
 struct NumberNode;
 struct BinaryExpressionNode;
 struct CallExpressionNode;
 
 struct Visitor {
-  virtual void visit(IdentityNode &node) = 0;
+  virtual void visit(IdentifierNode &node) = 0;
   virtual void visit(NumberNode &node) = 0;
   virtual void visit(BinaryExpressionNode &node) = 0;
   virtual void visit(CallExpressionNode &node) = 0;
@@ -23,9 +23,9 @@ struct Node {
   virtual ~Node() = default;
 };
 
-struct IdentityNode : public Node {
+struct IdentifierNode : public Node {
   std::string name;
-  IdentityNode(const std::string name) : name(name) {};
+  IdentifierNode(const std::string name) : name(name) {};
   void accept(Visitor &v) override { v.visit(*this); }
 };
 
@@ -36,12 +36,12 @@ struct NumberNode : public Node {
 };
 
 struct BinaryExpressionNode : public Node {
-  std::string name;
+  std::string op;
   std::unique_ptr<Node> lhs;
   std::unique_ptr<Node> rhs;
-  BinaryExpressionNode(const std::string name, std::unique_ptr<Node> lhs,
+  BinaryExpressionNode(const std::string op, std::unique_ptr<Node> lhs,
                        std::unique_ptr<Node> rhs)
-      : name(name), lhs(std::move(lhs)), rhs(std::move(rhs)) {};
+      : op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {};
   void accept(Visitor &v) override { v.visit(*this); }
 };
 
@@ -60,21 +60,20 @@ struct PrintVisitor : public Visitor {
     node->accept(*this);
     return value;
   }
-  void visit(IdentityNode &node) { value = node.name; }
+  void visit(IdentifierNode &node) { value = node.name; }
   void visit(NumberNode &node) { value = std::to_string(node.value); }
   void visit(BinaryExpressionNode &node) {
-    value =
-        "(" + visit(node.lhs) + " " + node.name + " " + visit(node.rhs) + ")";
+    value = "(" + visit(node.lhs) + " " + node.op + " " + visit(node.rhs) + ")";
   }
   void visit(CallExpressionNode &node) {
-    std::string s;
-    for (auto &argument : node.arguments) {
-      s += visit(argument);
-      if (argument != node.arguments.back()) {
-        s += ", ";
+    std::string result = node.callee + "(";
+    for (size_t i = 0; i < node.arguments.size(); ++i) {
+      result += visit(node.arguments[i]);
+      if (i < node.arguments.size() - 1) {
+        result += ", ";
       }
     }
-    value = node.callee + "(" + s + ")";
+    value = result;
   }
 };
 
@@ -86,10 +85,10 @@ int main() {
   auto functionCall =
       std::make_unique<CallExpressionNode>("f", std::move(args));
   auto root = std::make_unique<BinaryExpressionNode>(
-      "*", std::make_unique<IdentityNode>("a"),
+      "*", std::make_unique<IdentifierNode>("a"),
 
       std::make_unique<BinaryExpressionNode>(
-          "+", std::make_unique<IdentityNode>("b"), std::move(functionCall)));
+          "+", std::make_unique<IdentifierNode>("b"), std::move(functionCall)));
 
   PrintVisitor visitor{};
   root->accept(visitor);

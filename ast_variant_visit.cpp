@@ -6,17 +6,17 @@
 #include <variant>
 #include <vector>
 
-struct IdentityNode;
+struct IdentifierNode;
 struct NumberNode;
 struct BinaryExpressionNode;
 struct CallExpressionNode;
 
-using Node = std::variant<IdentityNode, NumberNode, BinaryExpressionNode,
+using Node = std::variant<IdentifierNode, NumberNode, BinaryExpressionNode,
                           CallExpressionNode>;
 
-struct IdentityNode {
+struct IdentifierNode {
   std::string name;
-  IdentityNode(const std::string name) : name(name) {};
+  IdentifierNode(const std::string name) : name(name) {};
 };
 
 struct NumberNode {
@@ -25,12 +25,12 @@ struct NumberNode {
 };
 
 struct BinaryExpressionNode {
-  std::string name;
+  std::string op;
   std::unique_ptr<Node> lhs;
   std::unique_ptr<Node> rhs;
-  BinaryExpressionNode(const std::string name, std::unique_ptr<Node> lhs,
+  BinaryExpressionNode(const std::string op, std::unique_ptr<Node> lhs,
                        std::unique_ptr<Node> rhs)
-      : name(name), lhs(std::move(lhs)), rhs(std::move(rhs)) {};
+      : op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {};
 };
 
 struct CallExpressionNode {
@@ -41,26 +41,26 @@ struct CallExpressionNode {
       : callee(callee), arguments(std::move(arguments)) {};
 };
 
-struct Visitor {
-  std::string operator()(IdentityNode &node) { return node.name; }
-  std::string operator()(NumberNode &node) {
+struct PrintVisitor {
+  std::string operator()(const NumberNode &node) const {
     return std::to_string(node.value);
   }
-  std::string operator()(BinaryExpressionNode &node) {
-    return "(" + visit(node.lhs) + " " + node.name + " " + visit(node.rhs) +
-           ")";
+  std::string operator()(const IdentifierNode &node) const { return node.name; }
+  std::string operator()(const BinaryExpressionNode &node) const {
+    return "(" + visit(node.lhs) + " " + node.op + " " + visit(node.rhs) + ")";
   }
-  std::string operator()(CallExpressionNode &node) {
-    std::string s;
-    for (auto &argument : node.arguments) {
-      s += visit(argument);
-      if (argument != node.arguments.back()) {
-        s += ", ";
+  std::string operator()(const CallExpressionNode &node) const {
+    std::string result = node.callee + "(";
+    for (size_t i = 0; i < node.arguments.size(); ++i) {
+      result += visit(node.arguments[i]);
+      if (i < node.arguments.size() - 1) {
+        result += ", ";
       }
     }
-    return node.callee + "(" + s + ")";
+    result += ")";
+    return result;
   }
-  std::string visit(std::unique_ptr<Node> &node) {
+  std::string visit(const std::unique_ptr<Node> &node) const {
     return std::visit(*this, *node);
   }
 };
@@ -76,10 +76,10 @@ int main() {
   args.push_back(make(NumberNode(2)));
   auto functionCall = make(CallExpressionNode("f", std::move(args)));
   auto root = make(BinaryExpressionNode(
-      "*", make(IdentityNode("a")),
-      make(BinaryExpressionNode("+", make(IdentityNode("b")),
+      "*", make(IdentifierNode("a")),
+      make(BinaryExpressionNode("+", make(IdentifierNode("b")),
                                 std::move(functionCall)))));
 
-  Visitor visitor{};
+  PrintVisitor visitor{};
   std::cout << visitor.visit(root) << std::endl;
 }
