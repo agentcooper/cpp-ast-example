@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS = -Wall -Wextra -std=c++20 -O3
+CXXFLAGS = -Wall -Wextra -Werror -pedantic -std=c++20 -O3
 
 all: ast_inheritance ast_variant_visit ast_variant_visit_arena
 
@@ -14,4 +14,4 @@ ast_variant_visit_arena: ast_variant_visit_arena.cpp
 
 .PHONY: clean
 clean:
-	rm -rf ast_inheritance ast_variant_visit
+	rm -rf ast_inheritance ast_variant_visit ast_variant_visit_arena
