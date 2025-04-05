@@ -16,12 +16,12 @@ using Node = std::variant<IdentityNode, NumberNode, BinaryExpressionNode,
 
 struct IdentityNode {
   std::string name;
-  IdentityNode(const std::string name) : name(name){};
+  IdentityNode(const std::string name) : name(name) {};
 };
 
 struct NumberNode {
   int value;
-  NumberNode(const int value) : value(value){};
+  NumberNode(const int value) : value(value) {};
 };
 
 struct BinaryExpressionNode {
@@ -30,7 +30,7 @@ struct BinaryExpressionNode {
   std::unique_ptr<Node> rhs;
   BinaryExpressionNode(const std::string name, std::unique_ptr<Node> lhs,
                        std::unique_ptr<Node> rhs)
-      : name(name), lhs(std::move(lhs)), rhs(std::move(rhs)){};
+      : name(name), lhs(std::move(lhs)), rhs(std::move(rhs)) {};
 };
 
 struct CallExpressionNode {
@@ -38,7 +38,7 @@ struct CallExpressionNode {
   std::vector<std::unique_ptr<Node>> arguments;
   CallExpressionNode(const std::string callee,
                      std::vector<std::unique_ptr<Node>> arguments)
-      : callee(callee), arguments(std::move(arguments)){};
+      : callee(callee), arguments(std::move(arguments)) {};
 };
 
 struct Visitor {

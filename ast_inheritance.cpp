@@ -25,13 +25,13 @@ struct Node {
 
 struct IdentityNode : public Node {
   std::string name;
-  IdentityNode(const std::string name) : name(name){};
+  IdentityNode(const std::string name) : name(name) {};
   void accept(Visitor &v) override { v.visit(*this); }
 };
 
 struct NumberNode : public Node {
   int value;
-  NumberNode(const int value) : value(value){};
+  NumberNode(const int value) : value(value) {};
   void accept(Visitor &v) override { v.visit(*this); }
 };
 
@@ -41,7 +41,7 @@ struct BinaryExpressionNode : public Node {
   std::unique_ptr<Node> rhs;
   BinaryExpressionNode(const std::string name, std::unique_ptr<Node> lhs,
                        std::unique_ptr<Node> rhs)
-      : name(name), lhs(std::move(lhs)), rhs(std::move(rhs)){};
+      : name(name), lhs(std::move(lhs)), rhs(std::move(rhs)) {};
   void accept(Visitor &v) override { v.visit(*this); }
 };
 
@@ -50,7 +50,7 @@ struct CallExpressionNode : public Node {
   std::vector<std::unique_ptr<Node>> arguments;
   CallExpressionNode(const std::string callee,
                      std::vector<std::unique_ptr<Node>> arguments)
-      : callee(callee), arguments(std::move(arguments)){};
+      : callee(callee), arguments(std::move(arguments)) {};
   void accept(Visitor &v) override { v.visit(*this); }
 };
 
